@@ -1,12 +1,12 @@
 // content.js
 const content = {
-  hero: {
-    name: "אהרון סגל",
-    title: "מורה למוזיקה ומפיק",
-    subtitle: "שיעורי גיטרה, פסנתר, יוקללי ופיתוח קול | הפקה מוזיקלית",
-    logo: "/Music_Website/images/segal_logo.png",
-    image: "/Music_Website/images/hero_image.jpg"
-  },
+hero: {
+  name: "אהרון סגל",
+  title: "מורה למוזיקה ומפיק",
+  subtitle: "שיעורי גיטרה, פסנתר, יוקללי ופיתוח קול | הפקה מוזיקלית",
+  logo: "%PUBLIC_URL%/images/segal_logo.png",
+  image: "%PUBLIC_URL%/images/hero_image.jpg"
+},
   about: [
     {
       icon: "Music",

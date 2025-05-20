@@ -1,4 +1,4 @@
-// components/Hero.js - UPDATED VERSION
+// Hero.js
 import React from 'react';
 import theme from '../theme';
 import content from '../content';
@@ -6,6 +6,11 @@ import content from '../content';
 const Hero = () => {
   const { colors, spacing, fontSize } = theme;
   const { hero } = content;
+
+  // Function to process the path with PUBLIC_URL
+  const getPublicPath = (path) => {
+    return path.replace(/%PUBLIC_URL%/g, process.env.PUBLIC_URL);
+  };
 
   return (
     <>
@@ -19,7 +24,7 @@ const Hero = () => {
         }}
       >
         <img 
-          src={hero.logo}
+          src={getPublicPath(hero.logo)}
           alt="Logo" 
           style={{
             width: '100%',
@@ -65,7 +70,7 @@ const Hero = () => {
         }}
       >
         <img 
-          src={hero.image}
+          src={getPublicPath(hero.image)}
           alt={hero.name} 
           style={{
             width: '100%',
