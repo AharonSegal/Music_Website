@@ -8,6 +8,7 @@ import MusicPlayer from './components/MusicPlayer';
 import VideoSection from './components/VideoSection';
 import ReviewCarousel from './components/ReviewCarousel';
 import Contact from './components/Contact';
+import PromoMessage from './components/PromoMessage';
 import Footer from './components/Footer';
 import PhoneButton from './components/PhoneButton';
 import WhatsAppButton from './components/WhatsAppButton';
@@ -48,6 +49,7 @@ const App = () => {
         <VideoSection />
         <ReviewCarousel />
         <Contact />
+        <PromoMessage />
         <Footer />
       </div>
       
