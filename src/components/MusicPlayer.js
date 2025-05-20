@@ -1,36 +1,188 @@
 // components/MusicPlayer.js
-import React, { useState, useEffect } from 'react';
-import { ExternalLink } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Play, Pause, ExternalLink } from 'lucide-react';
 import theme from '../theme';
 import content from '../content';
 
 const MusicPlayer = () => {
   const [currentTrack, setCurrentTrack] = useState(null);
-  const [iframeReady, setIframeReady] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [isWidgetReady, setIsWidgetReady] = useState(false);
+  const iframeRef = useRef(null);
+  const widgetRef = useRef(null);
+  const progressIntervalRef = useRef(null);
   
   const { colors, spacing, fontSize, borderRadius } = theme;
   const { music } = content;
 
-  // Initialize SoundCloud Widget API
+  // Initialize SoundCloud widget
   useEffect(() => {
-    // Load SoundCloud Widget API
-    const script = document.createElement('script');
-    script.src = 'https://w.soundcloud.com/player/api.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      setIframeReady(true);
-    };
-
-    return () => {
-      document.body.removeChild(script);
-    };
+    // Load SoundCloud API if it doesn't exist
+    if (!window.SC) {
+      const script = document.createElement('script');
+      script.src = 'https://w.soundcloud.com/player/api.js';
+      script.async = true;
+      script.onload = () => {
+        console.log('SoundCloud API loaded successfully');
+        setIsWidgetReady(true);
+      };
+      script.onerror = (error) => {
+        console.error('Error loading SoundCloud API:', error);
+      };
+      document.body.appendChild(script);
+      
+      return () => {
+        document.body.removeChild(script);
+      };
+    } else {
+      setIsWidgetReady(true);
+    }
   }, []);
 
-  // Handle track selection
-  const playTrack = (trackId) => {
-    setCurrentTrack(trackId);
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+      // Make sure to pause any playing track when component unmounts
+      if (widgetRef.current && isPlaying) {
+        try {
+          widgetRef.current.pause();
+        } catch (e) {
+          console.error('Error pausing track on unmount:', e);
+        }
+      }
+    };
+  }, [isPlaying]);
+
+  const togglePlay = (trackId) => {
+    // If SoundCloud API is not ready, do nothing
+    if (!isWidgetReady || !window.SC || !window.SC.Widget) {
+      console.error('SoundCloud Widget API is not ready');
+      return;
+    }
+    
+    const track = music.find(t => t.id === trackId);
+    
+    // If track is already playing/paused
+    if (currentTrack === trackId) {
+      if (isPlaying) {
+        // Pause current track
+        if (widgetRef.current) {
+          try {
+            widgetRef.current.pause();
+            setIsPlaying(false);
+          } catch (e) {
+            console.error('Error pausing track:', e);
+          }
+        }
+      } else {
+        // Resume current track
+        if (widgetRef.current) {
+          try {
+            widgetRef.current.play();
+            setIsPlaying(true);
+          } catch (e) {
+            console.error('Error playing track:', e);
+          }
+        }
+      }
+    } 
+    // If selecting a new track
+    else {
+      // Stop current track if any
+      if (widgetRef.current && isPlaying) {
+        try {
+          widgetRef.current.pause();
+        } catch (e) {
+          console.error('Error stopping current track:', e);
+        }
+      }
+      
+      // Clear previous progress interval
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+      
+      setCurrentTrack(trackId);
+      setIsPlaying(true);
+      setProgress(0);
+      
+      // Get the container and update it
+      const container = document.getElementById('soundcloud-container');
+      if (container && track) {
+        try {
+          // Clear container
+          container.innerHTML = '';
+          
+          // Create iframe
+          const iframe = document.createElement('iframe');
+          iframe.id = 'soundcloud-iframe';
+          iframe.width = '100%';
+          iframe.height = '166';
+          iframe.scrolling = 'no';
+          iframe.frameBorder = 'no';
+          iframe.allow = 'autoplay';
+          iframe.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(track.url)}&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false`;
+          
+          // Add iframe to container
+          container.appendChild(iframe);
+          
+          // Save reference to iframe
+          iframeRef.current = iframe;
+          
+          // Initialize widget after a short delay to ensure iframe is loaded
+          setTimeout(() => {
+            try {
+              if (window.SC && window.SC.Widget) {
+                const widget = window.SC.Widget(iframe);
+                widgetRef.current = widget;
+                
+                // Set up event listeners
+                widget.bind(window.SC.Widget.Events.READY, () => {
+                  widget.play();
+                  
+                  // Start tracking progress
+                  progressIntervalRef.current = setInterval(() => {
+                    widget.getPosition((position) => {
+                      widget.getDuration((duration) => {
+                        if (duration > 0) {
+                          setProgress((position / duration) * 100);
+                        }
+                      });
+                    });
+                  }, 500);
+                });
+                
+                widget.bind(window.SC.Widget.Events.FINISH, () => {
+                  setIsPlaying(false);
+                  setProgress(0);
+                  if (progressIntervalRef.current) {
+                    clearInterval(progressIntervalRef.current);
+                  }
+                });
+                
+                widget.bind(window.SC.Widget.Events.PAUSE, () => {
+                  setIsPlaying(false);
+                });
+                
+                widget.bind(window.SC.Widget.Events.PLAY, () => {
+                  setIsPlaying(true);
+                });
+              }
+            } catch (error) {
+              console.error("Error initializing SoundCloud widget:", error);
+              setIsPlaying(false);
+            }
+          }, 500);
+        } catch (error) {
+          console.error("Error creating SoundCloud iframe:", error);
+          setIsPlaying(false);
+        }
+      }
+    }
   };
 
   return (
@@ -47,50 +199,32 @@ const MusicPlayer = () => {
         המוזיקה שלי
       </h2>
       
-      {/* Current track player */}
-      {currentTrack && (
-        <div 
-          style={{ 
-            marginBottom: spacing.medium,
-            borderRadius: borderRadius.medium,
-            overflow: 'hidden',
-            position: 'relative',
-            paddingBottom: '56.25%',  // 16:9 aspect ratio
-            height: 0
-          }}
-        >
-          <iframe
-            width="100%"
-            height="100%"
-            scrolling="no"
-            frameBorder="no"
-            allow="autoplay"
-            src={`https://w.soundcloud.com/player/?url=${music.find(t => t.id === currentTrack)?.url}&color=${colors.primary.replace('#', '')}&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              borderRadius: borderRadius.medium
-            }}
-          ></iframe>
-        </div>
-      )}
+      {/* Hidden SoundCloud container */}
+      <div 
+        id="soundcloud-container" 
+        style={{ 
+          position: 'absolute', 
+          left: '-9999px', 
+          visibility: 'hidden', 
+          height: 0, 
+          width: 0, 
+          overflow: 'hidden' 
+        }}
+      ></div>
       
       {/* Track list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         {music.map(track => (
           <div 
             key={track.id} 
-            onClick={() => playTrack(track.id)}
+            onClick={() => togglePlay(track.id)}
             style={{ 
               padding: '15px', 
               backgroundColor: 'rgba(255, 255, 255, 0.05)',
               borderRadius: borderRadius.medium,
               display: 'flex',
               alignItems: 'center',
-              gap: '15px',
+              justifyContent: 'space-between',
               cursor: 'pointer',
               border: currentTrack === track.id ? `2px solid ${colors.primary}` : 'none',
               transition: 'transform 0.2s ease, background-color 0.2s ease',
@@ -103,66 +237,61 @@ const MusicPlayer = () => {
               e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
             }}
           >
-            {/* Track artwork placeholder - will be replaced by SoundCloud's visual player */}
+            {/* Play/Pause button */}
             <div 
               style={{ 
-                width: '60px', 
-                height: '60px', 
-                borderRadius: borderRadius.small,
-                backgroundColor: colors.primary,
-                flexShrink: 0,
+                width: '40px', 
+                height: '40px', 
+                borderRadius: '50%',
+                backgroundColor: currentTrack === track.id && isPlaying ? colors.primary : 'rgba(255, 255, 255, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                overflow: 'hidden'
+                marginLeft: '15px',
               }}
             >
-              {/* Music icon as placeholder until SoundCloud artwork loads */}
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 18V6C9 4.34315 10.3431 3 12 3C13.6569 3 15 4.34315 15 6V18" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M18 12V18" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M6 12V18" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M3 15V18" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M21 15V18" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              {currentTrack === track.id && isPlaying ? (
+                <Pause size={18} color={colors.background} />
+              ) : (
+                <Play size={18} color={colors.text} style={{ marginLeft: '2px' }} />
+              )}
             </div>
             
             {/* Track info */}
             <div style={{ 
               flexGrow: 1,
-              textAlign: 'right'
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              textAlign: 'right',
             }}>
               <div style={{ 
                 fontWeight: 'bold',
-                marginBottom: '4px',
                 color: currentTrack === track.id ? colors.primary : colors.text
               }}>
                 {track.title}
               </div>
-              <div style={{ 
-                fontSize: fontSize.small,
-                opacity: 0.7
-              }}>
-                אהרון סגל | אורגינל
+              
+              {/* Progress bar */}
+              <div 
+                style={{ 
+                  width: '100%', 
+                  height: '4px', 
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '2px',
+                  overflow: 'hidden'
+                }}
+              >
+                <div 
+                  style={{ 
+                    height: '100%', 
+                    width: `${currentTrack === track.id ? progress : 0}%`, 
+                    backgroundColor: colors.primary,
+                    borderRadius: '2px',
+                    transition: 'width 0.1s linear'
+                  }}
+                ></div>
               </div>
-            </div>
-            
-            {/* Play indicator */}
-            <div style={{ 
-              width: '30px', 
-              height: '30px', 
-              borderRadius: '50%',
-              backgroundColor: currentTrack === track.id ? colors.primary : 'rgba(255, 255, 255, 0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              {currentTrack === track.id ? (
-                <span style={{ fontSize: '18px', color: colors.background }}>▶</span>
-              ) : (
-                <span style={{ fontSize: '18px', color: colors.text }}>▶</span>
-              )}
             </div>
           </div>
         ))}

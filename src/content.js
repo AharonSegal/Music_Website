@@ -1,12 +1,12 @@
 // content.js
 const content = {
-hero: {
-  name: "אהרון סגל",
-  title: "מורה למוזיקה ומפיק",
-  subtitle: "שיעורי גיטרה, פסנתר, יוקללי ופיתוח קול | הפקה מוזיקלית",
-  logo: "%PUBLIC_URL%/images/segal_logo.png",
-  image: "%PUBLIC_URL%/images/hero_image.jpg"
-},
+  hero: {
+    name: "אהרון סגל",
+    title: "מורה למוזיקה ומפיק",
+    subtitle: "שיעורי גיטרה, פסנתר, יוקללי ופיתוח קול | הפקה מוזיקלית",
+    logo: "%PUBLIC_URL%/images/segal_logo.png",
+    image: "%PUBLIC_URL%/images/hero_image.jpg"
+  },
   about: [
     {
       icon: "Music",
@@ -38,10 +38,21 @@ hero: {
     }
   ],
   music: [
-    { id: 1, title: "הפקה מקורית - שיר לדוגמה" },
-    { id: 2, title: "הקלטה מקצועית - פרויקט אולפן" },
-    { id: 3, title: "פיתוח קול - דוגמה מהקלטת תלמיד" },
-    { id: 4, title: "מיקס לדוגמה" }
+    { 
+      id: 1, 
+      title: "Pheonix",
+      url: "https://soundcloud.com/aharon-segal-408164914/pheonix"
+    },
+    { 
+      id: 2, 
+      title: "Ocean Panorama", 
+      url: "https://soundcloud.com/aharon-segal-408164914/ocean-panorama"
+    },
+    { 
+      id: 3, 
+      title: "Hipster Blues", 
+      url: "https://soundcloud.com/aharon-segal-408164914/hipster-blues-aharon-segal"
+    }
   ],
   videos: [
     "https://www.youtube.com/embed/J2ingPVjWfI", 

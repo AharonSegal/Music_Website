@@ -153,8 +153,7 @@ const ContactForm = () => {
           textAlign: 'center'
         }}
       >
-        רוצה שניצור איתך קשר?
-      </h2>
+השאר פרטים ואחזור אליך במהירות!      </h2>
       
       <form 
         onSubmit={handleSubmit} 
