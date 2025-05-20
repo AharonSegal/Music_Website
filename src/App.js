@@ -3,6 +3,7 @@ import React from 'react';
 import theme from './theme';
 import Hero from './components/Hero';
 import About from './components/About';
+import ContactForm from './components/ContactForm';
 import MusicPlayer from './components/MusicPlayer';
 import VideoSection from './components/VideoSection';
 import ReviewCarousel from './components/ReviewCarousel';
@@ -42,6 +43,7 @@ const App = () => {
       >
         <Hero />
         <About />
+        <ContactForm />
         <MusicPlayer />
         <VideoSection />
         <ReviewCarousel />
