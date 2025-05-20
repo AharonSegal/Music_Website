@@ -1,0 +1,18 @@
+// File structure:
+// 
+// src/
+// ├── App.js                 # Main application component
+// ├── index.js               # Entry point
+// ├── content.js             # Content data
+// ├── theme.js               # Theme colors and styles
+// ├── components/
+//     ├── Navbar.js          # Navigation component
+//     ├── ReviewCarousel.js   # Carousel for reviews
+//     ├── Hero.js            # Hero section
+//     ├── About.js           # About section
+//     ├── MusicPlayer.js     # Music player component
+//     ├── VideoSection.js    # YouTube videos section
+//     ├── Contact.js         # Contact information section
+//     ├── Footer.js          # Footer component
+//     ├── PhoneButton.js     # Floating phone button
+//     └── WhatsAppButton.js  # WhatsApp contact button
