@@ -4,8 +4,8 @@ const content = {
     name: "אהרון סגל",
     title: "מורה למוזיקה ומפיק",
     subtitle: "שיעורי גיטרה, פסנתר, יוקללי ופיתוח קול | הפקה מוזיקלית",
-    logo: "/images/segal_logo.png",
-    image: "/images/hero_image.jpg"
+    logo: "/Music_Website/images/segal_logo.png",
+    image: "/Music_Website/images/hero_image.jpg"
   },
   about: [
     {

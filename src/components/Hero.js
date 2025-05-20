@@ -1,4 +1,4 @@
-// components/Hero.js
+// components/Hero.js - UPDATED VERSION
 import React from 'react';
 import theme from '../theme';
 import content from '../content';

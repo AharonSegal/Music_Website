@@ -17,7 +17,7 @@ const PhoneButton = () => {
       href={`tel:${cleanPhoneNumber}`}
       style={{
         position: 'fixed',
-        bottom: '90px', // Increased from 80px to 100px to move it higher
+        bottom: '90px', 
         right: '20px',
         width: '60px',
         height: '60px',
